@@ -90,7 +90,7 @@ const currentSceneInfo = sceneInfo[currentSceneId];
 
   // معالجة اختيار موقع من الخريطة
   const handleLocationSelect = (locationId: string) => {
-    setCurrentSceneId(locationId);
+    setCurrentSceneId(locationId as SceneId);
     setCurrentHotspot(null);
     setViewMode('panorama');
     setIsLoading(true);
@@ -283,7 +283,7 @@ const currentSceneInfo = sceneInfo[currentSceneId];
             scenes={scenes} 
             activeSceneId={currentSceneId} 
             onSceneChange={(sceneId) => {
-              setCurrentSceneId(sceneId);
+              setCurrentSceneId(sceneId as SceneId);
               setCurrentHotspot(null);
             }} 
           />
