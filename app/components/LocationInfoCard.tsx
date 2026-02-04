@@ -61,7 +61,7 @@ export default function LocationInfoCard({
             <span>ابدأ الجولة</span>
           </button>
           
-          {scene.realImages && scene.realImages.length > 0 && (
+          {scene.realImages && scene.realImages?.length > 0 && (
             <button
               onClick={onShowGallery}
               className="px-5 py-2 bg-gradient-to-r from-black/40 to-black/20 border-2 border-gold/30 text-gold rounded-xl hover:bg-gold/20 transition-all duration-300 flex items-center justify-center gap-2 text-sm"
