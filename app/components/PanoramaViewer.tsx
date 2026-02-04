@@ -13,7 +13,7 @@ interface PanoramaProps {
 
 function SpherePanorama({ scene, onHotspotClick }: PanoramaProps) {
   const texture = useLoader(TextureLoader, scene.imageUrl);
-  const meshRef = useRef<any>();
+  const meshRef = useRef<any>(null);
   const { camera, size } = useThree();
 
   // نقاط Hotspotsىحة قعى يثر
