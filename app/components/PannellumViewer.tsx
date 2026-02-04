@@ -26,99 +26,159 @@ export default function PannellumViewer({
 }: PannellumViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<any>(null);
+
   const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showControls, setShowControls] = useState(false);
 
-  // تحويل المشاهد بتنسيق مخصص
+  /* =========================
+     تحويل المشاهد إلى Pannellum
+  ========================= */
   const getPannellumScenes = () => {
     const pannellumScenes: any = {};
+
     scenes.forEach(scene => {
       pannellumScenes[scene.id] = {
         title: scene.title,
         panorama: scene.imageUrl,
-        hotSpots: scene.hotSpots?.map(hotspot => ({
-          pitch: hotspot.pitch,
-          yaw: hotspot.yaw,
-          type: hotspot.type === 'scene' ? 'scene' : 'info',
-          text: hotspot.text,
-          sceneId: hotspot.sceneId,
-          cssClass: hotspot.type === 'info' ? 'luxury-info-hotspot' : 'luxury-scene-hotspot'
-        })) || [],
-        autoLoad: true
+        autoLoad: true,
+
+        hotSpots: scene.hotSpots?.map(hotspot => {
+          if (hotspot.type === 'scene') {
+            return {
+              pitch: hotspot.pitch,
+              yaw: hotspot.yaw,
+              type: 'scene',
+              text: hotspot.text,
+              sceneId: hotspot.sceneId,
+              cssClass: 'luxury-scene-hotspot'
+            };
+          }
+
+          return {
+            pitch: hotspot.pitch,
+            yaw: hotspot.yaw,
+            type: 'info',
+            text: hotspot.text,
+            cssClass: 'luxury-info-hotspot'
+          };
+        }) || []
       };
     });
+
     return pannellumScenes;
   };
 
+  /* =========================
+     إنشاء الـ Viewer مرة واحدة
+  ========================= */
   useEffect(() => {
-    let isMounted = true;
-    const initializeViewer = async () => {
+    let mounted = true;
+
+    const init = async () => {
       try {
-        if (!containerRef.current || !isMounted) return;
+        if (!containerRef.current || !mounted) return;
+
         const pannellum = await loadPannellum();
-        if (viewerRef.current) viewerRef.current.destroy();
+
+        if (viewerRef.current) {
+          viewerRef.current.destroy();
+        }
 
         viewerRef.current = pannellum.viewer(containerRef.current, {
           default: {
             firstScene: activeSceneId,
             autoLoad: true,
-            autoRotate: -1.0,
+            autoRotate: -0.8,
             sceneFadeDuration: 1200,
             compass: false,
             mouseZoom: true,
-            showControls: false, // إخفاء أزرار Pannellum الافتراضية تماماً
-            dragToThrow: true,
+            showControls: false,
+            dragToThrow: true
           },
           scenes: getPannellumScenes()
         });
 
-        viewerRef.current.on('scenechange', (id: string) => onSceneChange?.(id));
-        viewerRef.current.on('load', () => { setIsInitialized(true); onLoad?.(); });
-        viewerRef.current.on('error', (err: any) => setError(err.message));
-      } catch (err: any) { setError(err.message); }
+        /* عند تغيير المشهد من داخل Pannellum */
+        viewerRef.current.on('scenechange', (id: string) => {
+          onSceneChange?.(id);
+        });
+
+        /* عند الضغط على Hotspot */
+        viewerRef.current.on('hotspotclick', (_id: any, hotspot: any) => {
+          if (hotspot?.sceneId) {
+            viewerRef.current.loadScene(hotspot.sceneId);
+            onSceneChange?.(hotspot.sceneId);
+          }
+          onHotspotClick?.(hotspot);
+        });
+
+        viewerRef.current.on('load', () => {
+          setIsInitialized(true);
+          onLoad?.();
+        });
+
+        viewerRef.current.on('error', (err: any) => {
+          setError(err?.message || 'خطأ غير معروف');
+          onError?.(err);
+        });
+      } catch (err: any) {
+        setError(err.message);
+      }
     };
-    initializeViewer();
-    return () => { if (viewerRef.current) viewerRef.current.destroy(); };
+
+    init();
+
+    return () => {
+      mounted = false;
+      if (viewerRef.current) viewerRef.current.destroy();
+    };
   }, []);
 
-  // وظائف التحكم اليدوية
+  /* =========================
+     الاستماع لتغيير activeSceneId
+     (من Sidebar أو أي مكان آخر)
+  ========================= */
+  useEffect(() => {
+    if (!viewerRef.current || !isInitialized) return;
+
+    const current = viewerRef.current.getScene?.();
+    if (current !== activeSceneId) {
+      viewerRef.current.loadScene(activeSceneId);
+    }
+  }, [activeSceneId, isInitialized]);
+
+  /* =========================
+     أدوات التحكم
+  ========================= */
   const handleZoom = (delta: number) => {
     if (!viewerRef.current) return;
-    const currentZoom = viewerRef.current.getHfov();
-    viewerRef.current.setHfov(currentZoom + delta);
+    const hfov = viewerRef.current.getHfov();
+    viewerRef.current.setHfov(hfov + delta);
   };
 
+  /* =========================
+     JSX
+  ========================= */
   return (
-    <div className={`relative w-full h-full group overflow-hidden bg-[#040d08] ${className}`}>
-      {/* الطبقة الجمالية العلوية */}
-      <div className="absolute inset-0 pointer-events-none z-10 shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]" />
+    <div className={`relative w-full h-full overflow-hidden bg-[#040d08] ${className}`}>
+      <div className="absolute inset-0 z-10 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.5)]" />
 
-      {/* حاوية Pannellum */}
-      <div ref={containerRef} className="w-full h-full" style={{ minHeight: '500px' }} />
+      <div ref={containerRef} className="w-full h-full min-h-[500px]" />
 
-      {/* زر القائمة العائم (Magic Button) */}
-      <div className="absolute bottom-8 right-8 z-30 flex flex-col-reverse items-center gap-4">
+      {/* زر التحكم */}
+      <div className="absolute bottom-8 right-8 z-30 flex flex-col-reverse gap-4">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowControls(!showControls)}
-          className={`w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-2xl transition-colors duration-500 ${
+          className={`w-16 h-16 rounded-full flex items-center justify-center backdrop-blur-xl border border-white/20 shadow-2xl ${
             showControls ? 'bg-gold text-black' : 'bg-black/40 text-gold'
           }`}
         >
-          {showControls ? (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="LengthM4 6h16M4 12h16m-7 6h7" />
-            </svg>
-          )}
+          {showControls ? '✕' : '☰'}
         </motion.button>
 
-        {/* أزرار التحكم المخفية */}
         <AnimatePresence>
           {showControls && (
             <motion.div
@@ -127,49 +187,32 @@ export default function PannellumViewer({
               exit={{ opacity: 0, y: 20, scale: 0.8 }}
               className="flex flex-col gap-3 p-3 rounded-3xl bg-black/30 backdrop-blur-2xl border border-white/10"
             >
-              {[
-                { icon: '➕', label: 'Zoom In', onClick: () => handleZoom(-10) },
-                { icon: '➖', label: 'Zoom Out', onClick: () => handleZoom(10) },
-                { icon: '🔄', label: 'Reset', onClick: () => viewerRef.current.setHfov(100) },
-                { icon: '📷', label: 'Capture', onClick: () => {} },
-              ].map((btn, i) => (
-                <motion.button
-                  key={i}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  onClick={btn.onClick}
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/5 hover:bg-gold hover:text-black text-white transition-all border border-white/5 hover:border-gold shadow-lg"
-                  title={btn.label}
-                >
-                  <span className="text-xl">{btn.icon}</span>
-                </motion.button>
-              ))}
+              <button onClick={() => handleZoom(-10)}>➕</button>
+              <button onClick={() => handleZoom(10)}>➖</button>
+              <button onClick={() => viewerRef.current?.setHfov(100)}>🔄</button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* مؤشر التنقل (بسيط وأنيق في الزاوية) */}
-      <div className="absolute top-8 left-8 z-20 pointer-events-none">
-        <div className="bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 flex items-center gap-3">
-          <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-          <span className="text-[10px] text-white/70 uppercase tracking-[0.2em] font-medium">360° Vision Active</span>
-        </div>
-      </div>
-
-      {/* رسالة الخطأ المصممة */}
+      {/* رسالة الخطأ */}
       <AnimatePresence>
         {error && (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex items-center justify-center bg-[#040d08]/90 backdrop-blur-xl"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 flex items-center justify-center bg-black/80"
           >
-            <div className="text-center p-8 bg-white/5 border border-red-500/20 rounded-[2.5rem] shadow-2xl max-w-sm">
-              <div className="text-5xl mb-4">⚠️</div>
-              <h3 className="text-white font-bold text-xl mb-2">عذراً، تعذر التحميل</h3>
-              <p className="text-white/40 text-sm mb-6">{error}</p>
-              <button onClick={() => window.location.reload()} className="px-8 py-3 bg-gold text-black rounded-full font-bold">تحديث</button>
+            <div className="p-8 rounded-3xl bg-white/5 border border-red-500/30 text-center">
+              <div className="text-4xl mb-3">⚠️</div>
+              <p className="text-white/70 mb-4">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-2 bg-gold text-black rounded-full font-bold"
+              >
+                إعادة تحميل
+              </button>
             </div>
           </motion.div>
         )}
