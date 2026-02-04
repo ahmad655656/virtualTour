@@ -1,7 +1,6 @@
 'use client';
 
 import { Scene } from '@/lib/scenes';
-import { motion } from 'framer-motion';
 
 interface SidebarProps {
   scenes: Scene[];
@@ -10,112 +9,123 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ scenes, activeSceneId, onSceneChange }: SidebarProps) {
+  const getSceneIcon = (sceneId: string) => {
+    const icons: Record<string, string> = {
+      entrance: '🏛️',
+      flower: '🌺',
+      fountain: '⛲',
+      rest: '🌊',
+      playground: '🌾',
+      palmyra: '🏛️',
+      castle: '🏰',
+      coast: '🏖️'
+    };
+    return icons[sceneId] || '📍';
+  };
+
+  const getSceneColor = (sceneId: string) => {
+    const colors: Record<string, string> = {
+      entrance: 'from-purple-600/30 to-purple-800/30',
+      flower: 'from-emerald-600/30 to-emerald-800/30',
+      fountain: 'from-blue-600/30 to-blue-800/30',
+      rest: 'from-cyan-600/30 to-cyan-800/30',
+      playground: 'from-green-600/30 to-green-800/30',
+      palmyra: 'from-amber-600/30 to-amber-800/30',
+      castle: 'from-red-600/30 to-red-800/30',
+      coast: 'from-sky-600/30 to-sky-800/30'
+    };
+    return colors[sceneId] || 'from-gray-600/30 to-gray-800/30';
+  };
+
   return (
-    <aside className="w-full lg:w-[350px] xl:w-[400px] h-full flex flex-col bg-[#040d08]/40 backdrop-blur-2xl border-l border-white/5 shadow-2xl overflow-hidden">
-      {/* عنوان القائمة الجانبية */}
-      <div className="p-8 pb-4">
-        <div className="flex items-center gap-3 mb-2">
-          <span className="text-gold text-xl">🗺️</span>
-          <h2 className="text-xl font-bold tracking-tight text-white/90">خريطة المواقع</h2>
+    <div className="lg:w-80 w-full lg:h-auto h-64 overflow-hidden flex-shrink-0 border-r border-gold/20 bg-gradient-to-b from-black/50 to-black/30 backdrop-blur-xl">
+      <div className="p-4 border-b border-gold/20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold/20 to-gold/10 border border-gold/30 flex items-center justify-center">
+            <span className="text-xl">📋</span>
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white">قائمة المواقع</h3>
+            <p className="text-sm text-gray-400">انقر للانتقال إلى أي موقع</p>
+          </div>
         </div>
-        <p className="text-xs text-white/40 leading-relaxed uppercase tracking-[0.1em]">
-          اختر وجهتك لاستكشاف تفاصيل الحديقة
-        </p>
       </div>
 
-      {/* قائمة المواقع */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 custom-scrollbar">
-        {scenes.map((scene, index) => {
-          const isActive = activeSceneId === scene.id;
-
+      <div className="p-4 space-y-2 overflow-y-auto h-[calc(100%-80px)]">
+        {scenes.map((scene) => {
+          const isActive = scene.id === activeSceneId;
+          
           return (
-            <motion.div
+            <button
               key={scene.id}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
               onClick={() => onSceneChange(scene.id)}
-              className={`relative group cursor-pointer rounded-[1.5rem] overflow-hidden transition-all duration-500 border ${
-                isActive 
-                  ? 'bg-gradient-to-br from-emerald-900/60 to-emerald-950/80 border-gold/40 shadow-xl shadow-black/40' 
-                  : 'bg-white/[0.03] border-white/5 hover:bg-white/[0.08] hover:border-white/10'
+              className={`w-full p-4 rounded-xl text-right transition-all duration-300 group ${
+                isActive
+                  ? 'bg-gradient-to-r from-gold/20 to-gold/10 border-2 border-gold shadow-lg shadow-gold/20'
+                  : `bg-gradient-to-r ${getSceneColor(scene.id)} border border-white/10 hover:bg-white/5`
               }`}
             >
-              {/* صورة مصغرة خلفية خفيفة */}
-              <div 
-                className={`absolute inset-0 opacity-10 grayscale transition-transform duration-700 group-hover:scale-110 ${isActive ? 'opacity-20 grayscale-0' : ''}`}
-                style={{ 
-                  backgroundImage: `url(${scene.imageUrl})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              />
-
-              <div className="relative p-5 flex items-center gap-4 z-10">
-                {/* رقم الموقع أو أيقونة */}
-                <div className={`flex-shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center font-bold transition-all duration-500 ${
+              <div className="flex items-center justify-between">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                   isActive 
-                    ? 'bg-gold text-[#040d08] rotate-[10deg] shadow-[0_0_20px_rgba(212,175,55,0.3)]' 
-                    : 'bg-white/5 text-white/40 group-hover:bg-white/10 group-hover:text-gold'
+                    ? 'bg-gradient-to-br from-gold to-yellow-400 text-black' 
+                    : 'bg-black/30 text-gold'
                 }`}>
-                  {index + 1}
+                  <span className="text-xl">{getSceneIcon(scene.id)}</span>
                 </div>
-
-                <div className="flex-1">
-                  <h3 className={`font-bold text-base transition-colors duration-300 ${
-                    isActive ? 'text-gold' : 'text-white/80 group-hover:text-white'
-                  }`}>
-                    {scene.title}
-                  </h3>
-                  <p className="text-xs text-white/40 line-clamp-1 mt-1 font-light group-hover:text-white/60">
+                
+                <div className="flex-1 mr-3">
+                  <div className="flex items-center gap-2">
+                    <h4 className={`font-bold ${isActive ? 'text-white' : 'text-gray-200'}`}>
+                      {scene.title}
+                    </h4>
+                    {isActive && (
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                    )}
+                  </div>
+                  <p className={`text-sm mt-1 ${isActive ? 'text-gray-300' : 'text-gray-400'}`}>
                     {scene.description}
                   </p>
+                  
+                  {/* مؤشرات إضافية */}
+                  <div className="flex items-center gap-3 mt-2">
+                    <span className="text-xs px-2 py-1 rounded-full bg-black/30 text-gray-400">
+                      {scene.hotSpots?.length || 0} نقطة تفاعلية
+                    </span>
+                    <span className="text-xs px-2 py-1 rounded-full bg-black/30 text-gray-400">
+                      🔍 زووم 360°
+                    </span>
+                  </div>
                 </div>
-
-                {/* مؤشر الحالة */}
-                {isActive && (
-                  <motion.div 
-                    layoutId="activeIndicator"
-                    className="w-1.5 h-1.5 rounded-full bg-gold shadow-[0_0_10px_#D4AF37]"
-                  />
-                )}
               </div>
-
-              {/* تأثير التوهج عند التفعيل */}
+              
+              {/* شريط التقدم عند النشاط */}
               {isActive && (
-                <div className="absolute inset-0 bg-gradient-to-r from-gold/5 to-transparent pointer-events-none" />
+                <div className="mt-3 pt-3 border-t border-gold/30">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gold animate-pulse">🎯 موقع نشط</span>
+                    <span className="text-gray-400">انقر للنقاط التفاعلية</span>
+                  </div>
+                </div>
               )}
-            </motion.div>
+            </button>
           );
         })}
       </div>
 
-      {/* تذييل القائمة الجانبية */}
-      <div className="p-6 bg-black/20 border-t border-white/5">
-        <div className="flex items-center justify-between text-[10px] text-white/30 tracking-widest uppercase">
-          <span>Total Scenes: {scenes.length}</span>
-          <span className="flex items-center gap-1 italic text-gold/60">
-            <span className="w-1 h-1 rounded-full bg-gold animate-pulse"></span>
-            Auto-Sync Ready
-          </span>
+      {/* تذييل الشريط الجانبي */}
+      <div className="p-4 border-t border-gold/20 bg-gradient-to-r from-black/40 to-transparent">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-black/50 to-black/30 border border-gold/30">
+            <span className="text-gold">🌍</span>
+            <span className="text-sm text-gray-300">8 مواقع تاريخية</span>
+            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+          </div>
+          <p className="text-xs text-gray-500 mt-2">
+            تم تحديث البيانات آخر مرة اليوم
+          </p>
         </div>
       </div>
-
-      <style jsx global>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(212, 175, 55, 0.1);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(212, 175, 55, 0.3);
-        }
-      `}</style>
-    </aside>
+    </div>
   );
 }

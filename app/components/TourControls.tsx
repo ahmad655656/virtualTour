@@ -1,14 +1,11 @@
 'use client';
 
-import { motion } from 'framer-motion';
-
 interface TourControlsProps {
   onAudioToggle: () => void;
   onFullscreen: () => void;
   onInfoToggle: () => void;
   audioEnabled: boolean;
   infoEnabled: boolean;
-  className?: string; // أضفنا هذا لدعمه من الصفحة الرئيسية
 }
 
 export default function TourControls({
@@ -16,89 +13,101 @@ export default function TourControls({
   onFullscreen,
   onInfoToggle,
   audioEnabled,
-  infoEnabled,
-  className = ""
+  infoEnabled
 }: TourControlsProps) {
-  
-  const iconVariants = {
-    active: { scale: 1.2, color: "#D4AF37", filter: "drop-shadow(0 0 8px rgba(212, 175, 55, 0.8))" },
-    inactive: { scale: 1, color: "#ffffff" }
-  };
-
-  const buttonClass = (isActive: boolean) => `
-    relative w-14 h-14 rounded-2xl flex items-center justify-center 
-    transition-all duration-500 group overflow-hidden
-    ${isActive 
-      ? 'bg-gold/20 border-gold shadow-[0_0_20px_rgba(212,175,55,0.2)]' 
-      : 'bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20'
-    } border backdrop-blur-xl
-  `;
-
   return (
-    <div className={`flex items-center gap-4 p-3 rounded-[2rem] bg-black/40 backdrop-blur-2xl border border-white/5 shadow-2xl ${className}`}>
-      
-      {/* زر المعلومات */}
-      <motion.button
-        whileHover={{ y: -5 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={onInfoToggle}
-        className={buttonClass(infoEnabled)}
-      >
-        <span className={`text-xl transition-colors duration-300 ${infoEnabled ? 'text-gold' : 'text-white/70'}`}>
-          {infoEnabled ? '✦' : '✧'}
-        </span>
-        <div className="absolute bottom-1 w-1 h-1 rounded-full bg-gold opacity-0 group-hover:opacity-100 transition-opacity" />
-        {infoEnabled && <div className="absolute inset-0 bg-gold/5 animate-pulse" />}
-      </motion.button>
-
-      {/* زر الصوت */}
-      <motion.button
-        whileHover={{ y: -5 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={onAudioToggle}
-        className={buttonClass(audioEnabled)}
-      >
-        <div className="relative">
-          <span className={`text-xl ${audioEnabled ? 'text-gold' : 'text-white/70'}`}>
-            {audioEnabled ? '🔊' : '🔈'}
-          </span>
-          {audioEnabled && (
-            <motion.span 
-              animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="absolute -inset-2 border border-gold/30 rounded-full"
-            />
-          )}
+    <div className="fixed bottom-6 right-6 z-40">
+      <div className="flex flex-col items-center gap-4">
+        {/* أزرار التحكم الدائرية */}
+        <div className="flex items-center gap-4">
+          {/* زر الصوت */}
+          <button
+            onClick={onAudioToggle}
+            className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
+              audioEnabled
+                ? 'bg-gradient-to-br from-green-500 to-emerald-600 text-white'
+                : 'bg-gradient-to-br from-red-500/80 to-red-600/80 text-white'
+            } hover:scale-110 hover:shadow-lg`}
+            title={audioEnabled ? 'إيقاف الصوت' : 'تشغيل الصوت'}
+          >
+            <span className="text-2xl">
+              {audioEnabled ? '🔊' : '🔇'}
+            </span>
+            
+            {/* تأثير النبض عند التشغيل */}
+            {audioEnabled && (
+              <div className="absolute inset-0 rounded-full border-2 border-green-400 animate-ping opacity-50"></div>
+            )}
+          </button>
+          
+          {/* زر المعلومات */}
+          <button
+            onClick={onInfoToggle}
+            className={`relative w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${
+              infoEnabled
+                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+                : 'bg-gradient-to-br from-gray-700/80 to-gray-800/80 text-white'
+            } hover:scale-110 hover:shadow-lg`}
+            title={infoEnabled ? 'إخفاء المعلومات' : 'إظهار المعلومات'}
+          >
+            <span className="text-2xl">ℹ️</span>
+            
+            {/* تأثير النبض عند التشغيل */}
+            {infoEnabled && (
+              <div className="absolute inset-0 rounded-full border-2 border-blue-400 animate-ping opacity-50"></div>
+            )}
+          </button>
+          
+          {/* زر ملء الشاشة */}
+          <button
+            onClick={onFullscreen}
+            className="relative w-14 h-14 rounded-full flex items-center justify-center bg-gradient-to-br from-gold to-yellow-400 text-black shadow-2xl hover:scale-110 hover:shadow-lg transition-all duration-300"
+            title="ملء الشاشة"
+          >
+            <span className="text-2xl">⛶</span>
+            
+            {/* تأثير التوهج */}
+            <div className="absolute inset-0 rounded-full bg-gold opacity-20 blur-md"></div>
+          </button>
         </div>
-      </motion.button>
-
-      {/* فاصل أنيق */}
-      <div className="w-[1px] h-8 bg-white/10 mx-1" />
-
-      {/* زر ملء الشاشة */}
-      <motion.button
-        whileHover={{ y: -5 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={onFullscreen}
-        className={buttonClass(false)}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white/70 group-hover:text-gold transition-colors">
-          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </motion.button>
-
-      {/* زر VR المتقدم */}
-      <motion.button
-        whileHover={{ y: -5, width: "100px" }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => alert('Coming Soon: تجربة الواقع الافتراضي الفاخرة')}
-        className="relative h-14 w-14 rounded-2xl bg-gradient-to-br from-emerald-600/40 to-emerald-900/40 border border-emerald-400/30 flex items-center justify-center transition-all duration-500 group overflow-hidden"
-      >
-        <span className="text-xl z-10">🥽</span>
-        <span className="absolute right-4 text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">VR MODE</span>
-        <div className="absolute inset-0 bg-emerald-400/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
-      </motion.button>
-
+        
+        {/* شريط الحالة */}
+        <div className="bg-gradient-to-r from-black/80 to-black/60 backdrop-blur-md px-6 py-2 rounded-full border border-gold/30 shadow-lg">
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+              <span className="text-gray-300">جولة نشطة</span>
+            </div>
+            
+            <div className="h-4 w-px bg-gold/30"></div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-gold">360°</span>
+              <span className="text-gray-300">بانوراما</span>
+            </div>
+            
+            <div className="h-4 w-px bg-gold/30"></div>
+            
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${audioEnabled ? 'bg-green-400' : 'bg-red-400'}`}></span>
+              <span className="text-gray-300">صوت {audioEnabled ? 'نشط' : 'معطل'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* تلميح الإرشادات */}
+      <div className="absolute -left-40 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-black/80 to-black/60 backdrop-blur-md p-3 rounded-xl border border-gold/30 shadow-lg opacity-0 hover:opacity-100 transition-opacity duration-300">
+        <div className="text-xs text-gray-300 text-center whitespace-nowrap">
+          <div className="font-bold text-gold mb-1">إرشادات التحكم:</div>
+          <div>🔊 صوت الخلفية</div>
+          <div>ℹ️ معلومات الموقع</div>
+          <div>⛶ ملء الشاشة</div>
+        </div>
+        <div className="absolute right-0 top-1/2 transform translate-x-full -translate-y-1/2">
+          <div className="w-0 h-0 border-t-8 border-b-8 border-l-8 border-t-transparent border-b-transparent border-l-gold/30"></div>
+        </div>
+      </div>
     </div>
   );
 }

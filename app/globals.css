@@ -1,84 +1,179 @@
 @import "tailwindcss";
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-rgb: 10, 41, 25;
+@theme {
+  --color-gold: #D4AF37;
+  --color-dark-green: #0a2919;
+  --color-medium-green: #0d351f;
+  --color-light-green: #093316;
+  
+  --color-primary: #0a2919;
+  --color-secondary: #D4AF37;
+  --color-accent: #0d351f;
+  
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-pulse-slow: pulse 3s ease-in-out infinite;
+  --animate-bounce-slow: bounce 2s infinite;
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-slide-in: slideIn 0.3s ease-out;
+  --animate-float: float 6s ease-in-out infinite;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  --background: #0a2919;
+  --foreground: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a2919;
+    --foreground: #ededed;
+  }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
 }
 
-/* تخصيص شريط التمرير */
+/* أنماط مخصصة */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 215, 0, 0.1);
+  background: #0a2919;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 215, 0, 0.5);
-  border-radius: 4px;
+  background: color-mix(in srgb, #D4AF37 50%, transparent);
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 215, 0, 0.7);
-}
-/* أنماط النقاط الساخنة */
-.pnlm-hotspot {
-  transition: all 0.3s ease;
+  background: #D4AF37;
 }
 
-.pnlm-hotspot:hover {
-  transform: scale(1.2);
+/* أنماط Leaflet المخصصة */
+.custom-leaflet-icon {
+  background: transparent !important;
+  border: none !important;
 }
 
-.info-hotspot {
-  background-color: rgba(0, 150, 255, 0.7);
-  border: 2px solid #0096ff;
+.custom-popup .leaflet-popup-content-wrapper {
+  background: linear-gradient(to bottom, #0a2919, #0d351f);
+  border: 2px solid color-mix(in srgb, #D4AF37 30%, transparent);
+  border-radius: 1rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 25px 50px -12px rgba(212, 175, 55, 0.25) !important;
 }
 
-.scene-hotspot {
-  background-color: rgba(255, 215, 0, 0.7);
-  border: 2px solid #ffd700;
+.custom-popup .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
 }
 
-/* أنيميشات */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.custom-popup .leaflet-popup-tip-container {
+  margin-top: -1px;
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
+.custom-popup .leaflet-popup-tip {
+  background: #0a2919;
+  border: 1px solid color-mix(in srgb, #D4AF37 30%, transparent);
+  box-shadow: none !important;
 }
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+/* تأثيرات التحميل */
+.loader-gradient {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, #D4AF37 10%, transparent),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
 }
 
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* تأثيرات التفاعل */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* تأثيرات الكروت */
+.card-glass {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* تأثيرات الظل */
+.shadow-gold {
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+}
+
+/* تأثيرات التدرج */
+.gradient-mask {
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+/* تأثيرات التشويش */
+.backdrop-blur-heavy {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* تأثيرات التوهج */
+.glow-gold {
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+}
+
+/* تأثيرات التمويه */
+.glass-effect {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* تأثيرات النص */
+.text-gradient {
+  background: linear-gradient(135deg, #D4AF37 0%, #FFD700 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
